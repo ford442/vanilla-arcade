@@ -1,0 +1,29 @@
+{
+  "name": "vanilla-arcade",
+  "version": "1.0.0",
+  "description": "A virtual arcade machine with recessed screen using vanilla-tilt.js and WebGPU.",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development",
+    "start": "webpack serve --mode development --open",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["arcade", "webgpu", "vanilla-tilt", "asteroids", "game"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vanilla-tilt": "^1.8.1"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.66",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.5",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}
