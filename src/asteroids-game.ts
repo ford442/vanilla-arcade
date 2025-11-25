@@ -345,7 +345,7 @@ export class AsteroidsGame {
     // Draw ship
     const shipColor = this.invincibleTime > 0 && Math.floor(time * 10) % 2 === 0
       ? { r: 0.5, g: 0.5, b: 1, a: 1 }
-      : { r: 0, g: 1, b: 0.5, a: 1 };
+      : { r: 0.1, g: 0.8, b: 1, a: 1 };
 
     if (!this.gameOver) {
       const shipVerts = this.ship.vertices.map((v) => ({
