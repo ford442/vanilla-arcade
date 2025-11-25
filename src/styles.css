@@ -6,7 +6,7 @@
 
 body {
   font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #0d0d1a 0%, #101020 50%, #0a0a14 100%);
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -15,20 +15,20 @@ body {
 }
 
 #app {
-  perspective: 2000px;
+  perspective: 3000px;
 }
 
 .arcade-cabinet {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(180deg, #2d2d44 0%, #1a1a2e 100%);
+  background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
   border-radius: 20px;
   padding: 20px;
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    inset 0 2px 4px rgba(255, 255, 255, 0.1);
-  border: 3px solid #444;
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(255, 255, 255, 0.05);
+  border: 3px solid #222;
 }
 
 .cabinet-top {
@@ -37,22 +37,22 @@ body {
 }
 
 .marquee {
-  background: linear-gradient(90deg, #ff0055 0%, #ff6600 50%, #ff0055 100%);
+  background: linear-gradient(90deg, #00ffff 0%, #00aaff 50%, #00ffff 100%);
   padding: 15px 30px;
   border-radius: 10px;
   text-align: center;
   box-shadow: 
-    0 0 30px rgba(255, 0, 85, 0.5),
+    0 0 30px rgba(0, 255, 255, 0.5),
     inset 0 -3px 10px rgba(0, 0, 0, 0.3);
   animation: marqueeGlow 2s ease-in-out infinite alternate;
 }
 
 @keyframes marqueeGlow {
   from {
-    box-shadow: 0 0 30px rgba(255, 0, 85, 0.5), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
   }
   to {
-    box-shadow: 0 0 50px rgba(255, 0, 85, 0.8), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -61,6 +61,40 @@ body {
   font-size: 2rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   letter-spacing: 4px;
+}
+
+.screen-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.side-panel {
+  width: 50px;
+  height: 850px;
+  background: #1a1a2e;
+  border: 3px solid #0f0;
+  box-shadow: 0 0 20px #0f0;
+}
+
+.side-panel.left {
+  transform: rotateY(25deg);
+}
+
+.side-panel.right {
+  transform: rotateY(-25deg);
+}
+
+.top-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: #1a1a2e;
+  border-bottom: 3px solid #0f0;
+  box-shadow: 0 0 20px #0f0;
+  transform: rotateX(-25deg) translateZ(20px);
 }
 
 .screen-bezel {
@@ -72,6 +106,7 @@ body {
     0 10px 30px rgba(0, 0, 0, 0.5);
   transform-style: preserve-3d;
   transition: transform 0.3s ease;
+  transform: rotateX(25deg);
 }
 
 .screen-recess {
@@ -87,8 +122,8 @@ body {
 
 #game-canvas {
   display: block;
-  width: 800px;
-  height: 600px;
+  width: 600px;
+  height: 800px;
   border-radius: 5px;
   background: #000;
   image-rendering: pixelated;
@@ -209,8 +244,8 @@ body {
 /* Responsive adjustments */
 @media (max-width: 900px) {
   #game-canvas {
-    width: 600px;
-    height: 450px;
+    width: 450px;
+    height: 600px;
   }
   
   .marquee h1 {
@@ -220,8 +255,8 @@ body {
 
 @media (max-width: 700px) {
   #game-canvas {
-    width: 400px;
-    height: 300px;
+    width: 300px;
+    height: 400px;
   }
   
   .marquee h1 {
