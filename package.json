@@ -1,7 +1,7 @@
 {
   "name": "vanilla-arcade",
   "version": "1.0.0",
-  "description": "An virtual arcade machine with recessed screen using vanilla-tilt.js and WebGPU.",
+  "description": "A virtual arcade machine with recessed screen using vanilla-tilt.js and WebGPU.",
   "main": "dist/bundle.js",
   "scripts": {
     "build": "webpack --mode production",

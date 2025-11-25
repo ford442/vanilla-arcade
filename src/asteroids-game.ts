@@ -268,16 +268,17 @@ export class AsteroidsGame {
       this.wrapPosition(asteroid.position);
     }
 
-    // Check bullet-asteroid collisions
+    // Check bullet-asteroid collisions (using squared distances to avoid sqrt)
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const bullet = this.bullets[i];
       for (let j = this.asteroids.length - 1; j >= 0; j--) {
         const asteroid = this.asteroids[j];
         const dx = bullet.position.x - asteroid.position.x;
         const dy = bullet.position.y - asteroid.position.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSquared = dx * dx + dy * dy;
+        const radiusSquared = asteroid.size * asteroid.size;
 
-        if (dist < asteroid.size) {
+        if (distSquared < radiusSquared) {
           // Remove bullet
           this.bullets.splice(i, 1);
           
@@ -296,14 +297,16 @@ export class AsteroidsGame {
       }
     }
 
-    // Check ship-asteroid collisions
+    // Check ship-asteroid collisions (using squared distances to avoid sqrt)
     if (this.invincibleTime <= 0) {
       for (const asteroid of this.asteroids) {
         const dx = this.ship.position.x - asteroid.position.x;
         const dy = this.ship.position.y - asteroid.position.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const distSquared = dx * dx + dy * dy;
+        const collisionRadius = asteroid.size + SHIP_SIZE * 0.5;
+        const radiusSquared = collisionRadius * collisionRadius;
 
-        if (dist < asteroid.size + SHIP_SIZE * 0.5) {
+        if (distSquared < radiusSquared) {
           this.gameOver = true;
           break;
         }
