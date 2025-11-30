@@ -3,35 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vanilla Arcade</title>
+  <title>Asteroid Blaster - Arcade Edition</title>
 </head>
 <body>
   <div id="app">
     <div class="arcade-cabinet">
-      <div class="cabinet-top">
-        <div class="marquee">
-          <h1>ASTEROID BLASTER</h1>
+      <!-- Side Panels -->
+      <div class="cabinet-side left"></div>
+      <div class="cabinet-side right"></div>
+
+      <!-- Main Body -->
+      <div class="cabinet-body">
+
+        <!-- Hood & Marquee -->
+        <div class="cabinet-hood">
+          <div class="hood-roof"></div>
+          <div class="marquee-container">
+            <div class="marquee">
+              <h1>ASTEROID BLASTER</h1>
+            </div>
+          </div>
+          <div class="hood-underside"></div>
         </div>
-      </div>
-      <div class="screen-area">
-        <div class="side-panel left"></div>
-        <div class="screen-bezel" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare="true" data-tilt-max-glare="0.3">
-          <div class="top-panel"></div>
-          <div class="screen-recess">
-            <canvas id="game-canvas"></canvas>
+
+        <!-- Screen Area -->
+        <div class="screen-area">
+          <div class="screen-bezel" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="1000" data-tilt-glare="true" data-tilt-max-glare="0.2">
+            <div class="screen-recess">
+              <canvas id="game-canvas"></canvas>
+            </div>
           </div>
         </div>
-        <div class="side-panel right"></div>
-      </div>
-      <div class="control-panel">
-        <div class="joystick"></div>
-        <div class="buttons">
-          <button class="arcade-btn fire-btn">FIRE</button>
-          <button class="arcade-btn thrust-btn">THRUST</button>
+
+        <!-- Control Panel -->
+        <div class="control-panel-shelf">
+          <div class="control-panel">
+            <div class="joystick-area">
+              <div class="joystick-base"></div>
+              <div class="joystick-stick"></div>
+              <div class="joystick-ball"></div>
+            </div>
+            <div class="buttons">
+              <button class="arcade-btn fire-btn">FIRE</button>
+              <button class="arcade-btn thrust-btn">THRUST</button>
+            </div>
+          </div>
+          <div class="control-panel-front"></div>
         </div>
-      </div>
-      <div class="cabinet-base">
-        <div class="coin-slot">INSERT COIN</div>
+
+        <!-- Base -->
+        <div class="cabinet-base">
+          <div class="coin-door">
+            <div class="coin-slot">25¢</div>
+            <div class="coin-return"></div>
+          </div>
+          <div class="speaker-grill">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
