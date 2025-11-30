@@ -67,12 +67,61 @@ class VanillaArcade {
       });
     }
 
+    // Setup UI Controls animation
+    this.setupUIControls();
+
     // Start game loop
     this.startTime = performance.now();
     this.gameLoop();
 
     // Handle window resize
     window.addEventListener('resize', () => this.handleResize());
+  }
+
+  private setupUIControls(): void {
+    const joystickArea = document.querySelector('.joystick-area');
+    const fireBtn = document.querySelector('.fire-btn');
+    const thrustBtn = document.querySelector('.thrust-btn');
+
+    if (!joystickArea || !fireBtn || !thrustBtn) return;
+
+    const handleKey = (e: KeyboardEvent, isDown: boolean) => {
+      // Joystick
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+        isDown ? joystickArea.classList.add('active-up') : joystickArea.classList.remove('active-up');
+        // Thrust button mirrors up key
+        isDown ? thrustBtn.classList.add('active') : thrustBtn.classList.remove('active');
+      }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        isDown ? joystickArea.classList.add('active-down') : joystickArea.classList.remove('active-down');
+      }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        isDown ? joystickArea.classList.add('active-left') : joystickArea.classList.remove('active-left');
+      }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        isDown ? joystickArea.classList.add('active-right') : joystickArea.classList.remove('active-right');
+      }
+
+      // Fire Button
+      if (e.code === 'Space') {
+        isDown ? fireBtn.classList.add('active') : fireBtn.classList.remove('active');
+      }
+    };
+
+    document.addEventListener('keydown', (e) => handleKey(e, true));
+    document.addEventListener('keyup', (e) => handleKey(e, false));
+
+    // Also handle touch/mouse events on the onscreen buttons to animate them
+    const addBtnListeners = (btn: Element) => {
+        btn.addEventListener('mousedown', () => btn.classList.add('active'));
+        btn.addEventListener('mouseup', () => btn.classList.remove('active'));
+        btn.addEventListener('mouseleave', () => btn.classList.remove('active'));
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); btn.classList.add('active'); });
+        btn.addEventListener('touchend', () => btn.classList.remove('active'));
+    };
+
+    addBtnListeners(fireBtn);
+    addBtnListeners(thrustBtn);
   }
 
   private showWebGPUError(): void {
