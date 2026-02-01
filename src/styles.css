@@ -12,15 +12,321 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  perspective: 2500px; /* Reduced perspective for better fit */
 }
 
 #app {
   perspective: 3000px;
+  transform-style: preserve-3d;
 }
 
+/* --- Cabinet Structure --- */
+
 .arcade-cabinet {
+  position: relative;
+  width: 700px;
+  height: 900px;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  /* Center of rotation */
+  transform-origin: center center -350px;
+}
+
+/* Side Panels
+   Asteroids profile:
+   - Top is flat.
+   - Front top (Marquee) is vertical.
+   - Screen slants back deeply.
+   - Control panel sticks out.
+   - Base goes down.
+*/
+.cabinet-side {
+  position: absolute;
+  top: 0;
+  width: 1000px; /* Depth */
+  height: 100%;
+  background: linear-gradient(to bottom, #2a2a40, #151520);
+  border: 4px solid #444;
+  /*
+     Coordinate system for side panel (rotated 90deg):
+     X axis is Depth (Front to Back). 0 is Front? No, usually 0 is left.
+     If width is 1000px, left is 0, right is 1000px.
+     We want the front to be at a certain point.
+     Let's map the clip-path.
+  */
+  clip-path: polygon(
+    10% 0%,      /* Top Back */
+    85% 0%,     /* Top Front (Hood Start) */
+    100% 0%,    /* Hood Tip (Overhang) */
+    100% 15%,   /* Hood Bottom Front */
+    90% 15%,    /* Recess Start */
+    80% 50%,    /* Screen Bottom (deep) */
+    100% 55%,   /* Control Panel Top Front */
+    100% 65%,   /* Control Panel Front Vertical */
+    90% 70%,    /* Under CP */
+    90% 100%,   /* Base Front */
+    10% 100%     /* Base Back */
+  );
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+.cabinet-side.left {
+  /* Positioned at left edge of cabinet width */
+  left: 0;
+  /* Rotate 90 deg. Origin at left edge? */
+  transform-origin: left top;
+  /*
+     Rotate Y -90deg turns it to point back.
+     TranslateZ allows moving it "in/out".
+     We want it flush with the left edge.
+     If we rotate -90, it goes "back" into Z space.
+     But we want the "Front" of the panel (right side of clip path usually) to be at Z ~ +150px.
+     If width is 1000px.
+     Let's say we shift it Z forward by 1000px? No.
+
+     Let's assume the "Front" (100% x) should align with the marquee front (Z=100).
+     The "Back" (0% x) is deep in Z.
+     So we need to shift the panel forward so that X=1000px is at Z=100px.
+
+     Standard rotation:
+     rotateY(-90deg) -> +X of element becomes -Z of world.
+     So 100% width (1000px) is at Z = -1000 relative to origin.
+     We want 100% width to be at Z = +100.
+     So we must translateZ(1100px)?
+
+     Wait.
+     If rotateY(-90deg):
+     Element X=0 is at Origin.
+     Element X=100 is at Z=-100.
+     Element X=1000 is at Z=-1000.
+
+     We want clip-path 100% (right side of panel image) to be the FRONT of the arcade.
+     So we want that point at Z=+150 (approx).
+     So we need to shift the whole plane Z=+1150?
+  */
+  transform: rotateY(-90deg) translateX(-100px) translateZ(0px);
+  /*
+     Actually, simpler:
+     Let's rotate 90 deg so +X is +Z?
+     rotateY(90deg) -> +X is +Z.
+     Then left side panel needs to be at x=0.
+     If we use rotateY(90deg), the "front" of the image (right side) points to +Z.
+     Yes!
+     So for LEFT panel:
+     It is at x=0.
+     We rotateY(-90deg)? No, that makes +X point to -Z.
+     We want +X point to +Z. So rotateY(90deg).
+     But we want the IMAGE to be on the OUTSIDE? Or INSIDE?
+     Usually we just want the shape.
+
+     Let's try:
+     Left Panel: rotateY(90deg). Origin: left center?
+     If origin is left, then it pivots around x=0.
+     It swings INTO the cabinet area?
+
+     Let's use specific positioning.
+  */
+  left: -1000px; /* Move it way left so its right edge is at x=0? No */
+  left: 0;
+  transform-origin: left top;
+  transform: rotateY(90deg) translateX(0) translateZ(0);
+  /* But wait, if I rotateY(90), the content is facing LEFT (away from center)?
+     Backface visibility?
+  */
+}
+
+.cabinet-side.left {
+  /* Reset */
+  left: 0;
+  width: 1000px;
+  transform-origin: 0 0;
+  /*
+     We want the panel to start at X=0 and extend in Z.
+     We want the "Front" of the machine (Z positive) to correspond to the right side of the clip path (100%).
+     So X axis of div should map to Z axis of world.
+     rotateY(90deg) maps X to Z.
+     So 0% is at Z=0, 100% is at Z=1000.
+     But we want 100% at Z=150 (Front).
+     So we need to shift it back in X (which is Z) by ~850px.
+     translateX(-850px).
+
+     So: rotateY(90deg) translateX(-850px).
+     Wait, translate is applied after rotation axis?
+     If transform-origin is 0 0.
+     rotateY(90deg) -> plane is on Z axis.
+     translateX moves along the *element's* X axis (which is now World Z).
+     So translateX(-850px) moves it to Z=-850.
+     So 0% is at Z=-850.
+     100% is at Z=150.
+     That sounds correct!
+  */
+  transform: rotateY(90deg) translateX(-850px);
+  background: linear-gradient(to right, #151520, #2a2a40); /* Darker at back */
+}
+
+.cabinet-side.right {
+  /* Attached to right edge */
+  right: 0;
+  width: 1000px;
+  transform-origin: right top;
+  /*
+    Rotate -90deg?
+    +X becomes -Z.
+    0% at Z=0. 100% at Z=-1000.
+    We want 100% at Z=150.
+    So we need to shift Z by +1150?
+    translateX is along element X (World -Z).
+    So translateX(-1150px) -> moves along element -X (World +Z).
+    Let's check.
+    translateX(-1150px) -> Moves 1150px in direction of element -X.
+    Element +X points to -Z. Element -X points to +Z.
+    So we move +1150 in Z.
+    0% is at Z=1150.
+    100% is at Z=150.
+    This puts the back of the machine at Z=1150 (positive).
+    But we want back at Z negative.
+
+    Let's try:
+    Rotate -90deg.
+    We want 100% (Front) at Z=150.
+    We want 0% (Back) at Z=-850.
+
+    If we just rotate -90deg:
+    0% is at Z=0.
+    100% is at Z=-1000.
+
+    We want to shift it +150 in Z? No, +1150 in Z?
+    We need 100% to be at Z=150.
+    Currently 100% is at Z=-1000.
+    Difference is +1150.
+    So we need to move +1150 in World Z.
+    Since element -X is World +Z.
+    We translate X by -1150px.
+
+    Let's try that.
+  */
+  transform: rotateY(-90deg) translateX(-1150px);
+  /* But wait, 0% is now at Z=1150. That's in front of the user?
+     Yes, if perspective is 2000px.
+     But for the LEFT panel, we did:
+     rotateY(90deg) -> X is Z.
+     translateX(-850px) -> 0% at Z=-850. 100% at Z=150.
+
+     So we want the RIGHT panel to match: 0% at Z=-850.
+
+     Right panel:
+     rotateY(-90deg) -> +X is -Z.
+     0% at Z=0.
+     100% at Z=-1000.
+
+     We want 0% at Z=-850.
+     So we need to shift Z by -850.
+     Element +X is -Z. Element -X is +Z.
+     To shift World Z by -850, we need to move in direction of World -Z.
+     World -Z is Element +X.
+     So translateX(850px).
+
+     Let's verify:
+     translateX(850px).
+     0% is at 850px on element X.
+     Element X is -Z.
+     So 0% is at Z=-850.
+     100% is at 1850px on element X -> Z=-1850.
+     Wait, 100% is *further* along X.
+     If X maps to -Z.
+     Then increasing X means decreasing Z.
+     So if 0% is at Z=-850.
+     100% (which is +1000px X) is at Z = -850 - 1000 = -1850.
+     That's backwards!
+
+     We need 100% to be at Z=150.
+     Clip path 100% is the Front.
+     Clip path 0% is the Back.
+
+     So we need the texture/clip path to be flipped or the rotation to be different.
+     Or we just accept that for the right panel, 0% is Front and 100% is Back?
+     No, the polygon is defined 0% to 100%.
+
+     We can scaleX(-1)?
+
+     Let's keep the polygon as is (100% is front).
+     So for Right Panel:
+     We want 100% X at Z=150.
+     We want 0% X at Z=-850.
+     So X must map to Z (positive correlation).
+
+     rotateY(90deg) maps X to Z?
+     Right panel is at Right edge.
+     If we rotateY(90deg), it pivots around Right edge.
+     It swings OUT towards user?
+     Right edge is X=Width.
+
+     Let's stick to simplest:
+     Left Panel: rotateY(90deg). X aligns with Z.
+     Right Panel: rotateY(90deg). X aligns with Z.
+     But it needs to be at the Right position.
+     Right is `right: 0`.
+
+     If we invoke rotateY(90deg) on right panel:
+     It faces "Left" (into the cabinet). The "back" of the div faces Right (out).
+     That's fine if we don't have text.
+
+     So, Right Panel:
+     transform: rotateY(90deg) translateX(-850px).
+     Same as Left Panel?
+     Yes, because `right: 0` positions the origin at the right edge.
+     Wait, `right: 0` means `left` is `parentWidth - elementWidth`? No.
+     Absolute positioning `right: 0`.
+
+     Let's try using `left` for both to be safe.
+     Left panel: `left: 0`.
+     Right panel: `left: 700px` (or whatever cabinet width is).
+
+     .arcade-cabinet width is 700px.
+
+     .cabinet-side.right {
+       left: 700px;
+       transform-origin: 0 0;
+       transform: rotateY(90deg) translateX(-850px);
+     }
+
+     This puts the Right panel at X=700.
+     Rotated 90deg (X points to Z).
+     Translated -850px in X (so Z start is -850).
+     Extends to Z=150.
+
+     This seems consistent!
+  */
+  left: 700px;
+  transform-origin: 0 0;
+  transform: rotateY(90deg) translateX(-850px);
+  background: linear-gradient(to right, #151520, #2a2a40);
+}
+
+
+/* ... (rest of styles same, adjusted for depth) ... */
+
+.cabinet-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  transform-style: preserve-3d;
+  background: #000; /* Fill the back? */
+}
+
+/* --- Hood & Marquee --- */
+
+.cabinet-hood {
+  position: relative;
+  height: 150px;
+  width: 100%;
+  background: #111;
+  transform: translateZ(100px); /* Front face at Z=100 */
+  z-index: 10;
+  display: flex;
+  justify-content: center;
   align-items: center;
   background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
   border-radius: 20px;
@@ -31,36 +337,105 @@ body {
   border: 3px solid #222;
 }
 
-.cabinet-top {
+.hood-roof {
+  position: absolute;
+  top: -20px;
+  left: 0;
   width: 100%;
-  margin-bottom: 15px;
+  height: 850px; /* Deep roof going back */
+  background: #111;
+  transform: rotateX(90deg) translateZ(20px); /* On top */
+  transform-origin: top;
+  /* We need to position it to cover from Z=100 back to Z=-850 */
+  /* If rotateX(90), Y points to -Z.
+     Height 850px -> extends to Z = -850 approx?
+     Origin top is at Y=0 (top of hood).
+     TranslateZ(20px) moves it UP in Y (since rotated). No, Z is Z.
+     Wait. rotateX(90).
+     Y axis becomes -Z axis.
+     Height is along Y.
+     So increasing height extends into -Z.
+     Top of hood is at Z=100 (parent is cabinet-hood).
+     So it goes from Z=100 to Z=100-850 = -750.
+     Pretty close.
+  */
+}
+
+.hood-underside {
+  position: absolute;
+  bottom: -100px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: #050505;
+  transform: rotateX(-90deg);
+  transform-origin: top;
+  box-shadow: inset 0 0 30px #000;
+}
+
+.marquee-container {
+  width: 90%;
+  height: 80%;
+  background: #000;
+  border: 4px solid #333;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
 }
 
 .marquee {
+  width: 100%;
+  height: 100%;
   background: linear-gradient(90deg, #00ffff 0%, #00aaff 50%, #00ffff 100%);
-  padding: 15px 30px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 
-    0 0 30px rgba(0, 255, 255, 0.5),
-    inset 0 -3px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   animation: marqueeGlow 2s ease-in-out infinite alternate;
 }
 
-@keyframes marqueeGlow {
-  from {
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
-  }
-  to {
-    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), inset 0 -3px 10px rgba(0, 0, 0, 0.3);
-  }
+.marquee h1 {
+  font-family: 'Courier New', monospace;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 0px #000, 0 0 10px rgba(255, 255, 255, 0.8);
+  letter-spacing: 5px;
+  transform: skewX(-10deg);
 }
 
-.marquee h1 {
-  color: #fff;
-  font-size: 2rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 4px;
+/* --- Screen Area --- */
+
+.screen-area {
+  flex: 1;
+  position: relative;
+  background: #000;
+  /* Deep recess.
+     Start from Z=0 (body plane) or pushed back?
+     Side panels show screen recess starts at 15% depth (approx Z=0) and goes deep.
+     Let's push screen area back.
+  */
+  transform: translateZ(-50px) rotateX(15deg);
+  transform-origin: top center;
+  margin: 0 20px;
+  box-shadow: inset 0 0 100px rgba(0,0,0,1);
+  border: 20px solid #111;
+  border-top: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.screen-area::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: 5;
 }
 
 .screen-area {
@@ -98,12 +473,10 @@ body {
 }
 
 .screen-bezel {
-  background: linear-gradient(145deg, #333 0%, #111 100%);
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 
-    inset 0 5px 20px rgba(0, 0, 0, 0.8),
-    0 10px 30px rgba(0, 0, 0, 0.5);
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
   transform-style: preserve-3d;
   transition: transform 0.3s ease;
   transform: rotateX(25deg);
@@ -111,13 +484,10 @@ body {
 
 .screen-recess {
   background: #000;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 
-    inset 0 0 50px rgba(0, 0, 0, 0.9),
-    inset 0 0 100px rgba(0, 0, 0, 0.5);
-  transform: translateZ(-30px);
-  transform-style: preserve-3d;
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  border: 2px solid #333;
 }
 
 #game-canvas {
@@ -127,121 +497,188 @@ body {
   border-radius: 5px;
   background: #000;
   image-rendering: pixelated;
-  transform: translateZ(10px);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+/* --- Control Panel --- */
+
+.control-panel-shelf {
+  position: relative;
+  height: 180px;
+  margin: 0 10px;
+  background: #333;
+  /* Protrude out */
+  transform: translateZ(50px) rotateX(-15deg);
+  transform-origin: top center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border-radius: 5px;
+  border: 2px solid #555;
+  z-index: 20;
 }
 
 .control-panel {
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  gap: 40px;
-  background: linear-gradient(180deg, #4a4a6a 0%, #2d2d44 100%);
-  padding: 25px 40px;
-  border-radius: 10px;
-  margin-top: 20px;
-  box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.1),
-    0 5px 15px rgba(0, 0, 0, 0.3);
+  height: 100%;
+  background: linear-gradient(180deg, #3a3a50 0%, #202030 100%);
+  border-top: 2px solid rgba(255,255,255,0.1);
 }
 
-.joystick {
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle at 30% 30%, #ff3333, #990000);
+.control-panel-front {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: #222;
+  transform: rotateX(-90deg);
+  transform-origin: bottom;
+  border-bottom: 2px solid #555;
+}
+
+/* Joystick & Buttons (Same as before) */
+.joystick-area {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.joystick-base {
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3);
   border-radius: 50%;
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.4),
-    inset 0 -5px 15px rgba(0, 0, 0, 0.3),
-    inset 0 5px 10px rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: transform 0.1s ease;
+  border: 2px solid rgba(255,255,255,0.1);
 }
 
-.joystick:active {
-  transform: translateY(5px);
-  box-shadow: 
-    0 5px 10px rgba(0, 0, 0, 0.4),
-    inset 0 -5px 15px rgba(0, 0, 0, 0.3),
-    inset 0 5px 10px rgba(255, 255, 255, 0.2);
-}
-
-.buttons {
-  display: flex;
-  gap: 20px;
-}
-
-.arcade-btn {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: none;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  font-size: 0.7rem;
-  cursor: pointer;
-  box-shadow: 
-    0 8px 15px rgba(0, 0, 0, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3),
-    inset 0 4px 8px rgba(255, 255, 255, 0.2);
-  transition: all 0.1s ease;
-}
-
-.arcade-btn:active {
-  transform: translateY(4px);
-  box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.4),
-    inset 0 -4px 10px rgba(0, 0, 0, 0.3),
-    inset 0 4px 8px rgba(255, 255, 255, 0.2);
-}
-
-.fire-btn {
-  background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);
-  color: white;
-}
-
-.thrust-btn {
-  background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00);
-  color: white;
-}
-
-.cabinet-base {
-  margin-top: 20px;
-  padding: 15px 30px;
-  background: linear-gradient(180deg, #2d2d44 0%, #1a1a2e 100%);
-  border-radius: 10px;
-}
-
-.coin-slot {
-  color: #ffd700;
-  font-size: 1.2rem;
-  text-align: center;
-  padding: 10px 20px;
-  background: #111;
-  border-radius: 5px;
-  border: 2px solid #333;
-  animation: coinBlink 1s ease-in-out infinite;
-}
-
-@keyframes coinBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* WebGPU not supported fallback */
-.webgpu-not-supported {
-  color: #ff0000;
-  font-size: 1.5rem;
-  text-align: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 10px;
+.joystick-stick {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
+  width: 16px;
+  height: 60px;
+  background: #888;
+  transform: translate(-50%, -50%) rotateX(45deg);
+  transform-origin: bottom center;
+  border-radius: 8px;
+  transition: transform 0.1s;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+  z-index: 2;
 }
 
-/* Responsive adjustments */
+.joystick-ball {
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, #ff3333, #990000);
+  border-radius: 50%;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+  z-index: 3;
+  transition: transform 0.1s;
+}
+
+.joystick-area.active-up .joystick-ball { transform: translateY(-20px); }
+.joystick-area.active-down .joystick-ball { transform: translateY(20px); }
+.joystick-area.active-left .joystick-ball { transform: translateX(-20px); }
+.joystick-area.active-right .joystick-ball { transform: translateX(20px); }
+
+.buttons {
+  display: flex;
+  gap: 30px;
+}
+
+.arcade-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 4px solid #111;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #111, 0 10px 10px rgba(0,0,0,0.4);
+  transition: all 0.05s;
+  position: relative;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.fire-btn {
+  background: radial-gradient(circle at 30% 30%, #ff4444, #aa0000);
+}
+
+.thrust-btn {
+  background: radial-gradient(circle at 30% 30%, #44ff44, #00aa00);
+}
+
+.arcade-btn:active, .arcade-btn.active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 #111, 0 0 5px rgba(0,0,0,0.4);
+}
+
+/* --- Cabinet Base --- */
+
+.cabinet-base {
+  height: 200px;
+  background: #1a1a2e;
+  margin: 0 10px;
+  border: 2px solid #333;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+  gap: 20px;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+  transform: translateZ(20px);
+}
+
+.coin-door {
+  width: 120px;
+  height: 100px;
+  background: #111;
+  border: 2px solid #555;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.coin-slot {
+  background: #000;
+  color: #ff0000;
+  font-weight: bold;
+  padding: 5px 10px;
+  border: 1px solid #333;
+  font-size: 0.9rem;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.coin-return {
+  width: 40px;
+  height: 30px;
+  background: #222;
+  border: 1px solid #444;
+}
+
+.speaker-grill {
+  display: flex;
+  gap: 5px;
+}
+
+.speaker-grill span {
+  width: 4px;
+  height: 30px;
+  background: #000;
+  border-radius: 2px;
+}
+
+/* --- Media Queries --- */
 @media (max-width: 900px) {
   #game-canvas {
     width: 450px;
@@ -267,4 +704,9 @@ body {
     flex-direction: column;
     gap: 20px;
   }
+}
+
+@keyframes marqueeGlow {
+  from { box-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
+  to { box-shadow: 0 0 40px rgba(0, 255, 255, 0.7); }
 }
